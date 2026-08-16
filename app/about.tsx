@@ -1,14 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 
 export default function About() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>این صفحه‌ی About هست</Text>
+    <View className='flex-1 justify-center items-center'>
+      <Text className='text-2xl'>این صفحه‌ی About هست</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 20 },
-});

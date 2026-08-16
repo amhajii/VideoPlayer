@@ -1,24 +1,18 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function Index() {
-  
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>به اپ ما خوش اومدی 👋</Text>
-      <Text style={styles.title}>اولین پروژه React Native</Text>
-      <Pressable style={styles.button} onPress={() => router.push('/about')}>
-        <Text style={styles.buttonText}>برو به صفحه‌ی About</Text>
+    <View className="flex-1 items-center justify-center gap-4 bg-slate-100">
+      <Text className="text-2xl font-bold text-3xl">به اپ ما خوش اومدی 👋</Text>
+      <Pressable
+        className="bg-green-600 px-10 py-5 rounded-2xl m-5 active:opacity-80 active:bg-red-400"
+        onPress={() => router.push('/about')}
+      >
+        <Text className="text-white text-base font-semibold text-xl">برو به صفحه‌ی About</Text>
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { backgroundColor: '#f0f0f0', flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
-  title: { fontSize: 22, fontWeight: 'bold' },
-  button: { backgroundColor: '#4A90D9', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-});
