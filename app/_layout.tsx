@@ -12,7 +12,7 @@ export default function Layout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Choose File' }} />
-      <Stack.Screen name="player" options={{ title: 'Play' }} />
+      <Stack.Screen name="PlayerScreen" options={{ title: 'Play' }} />
     </Stack>
   );
 }

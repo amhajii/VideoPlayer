@@ -1,8 +1,8 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View , Text } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import VideoPlayer from '../components/VideoPlayer';
-import GifPlayer from '../components/GifPlayer';
+
+import { VideoPlayer , GifPlayer } from '@/components';
 import type { MediaType } from '../utils/fileType';
 
 
@@ -23,8 +23,8 @@ export default function PlayerScreen() {
   }, [isFullscreen, navigation]);
 
   useEffect(() => {
-    console.log('uri:', uri);
-    console.log('type:', type);
+    // console.log('uri:', uri);
+    // console.log('type:', type);
   }, []);
 
 

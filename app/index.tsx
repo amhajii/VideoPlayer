@@ -27,9 +27,9 @@ export default function HomeScreen() {
       return;
     }
 
-    console.log('Picked file:', file);
-    console.log('File URI:', file.uri);
-    console.log('File Type:', type);
+    // console.log('Picked file:', file);
+    // console.log('File URI:', file.uri);
+    // console.log('File Type:', type);
 
     router.push({
       pathname: './PlayerScreen',
