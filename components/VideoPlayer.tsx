@@ -1,52 +1,34 @@
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useEffect,
-} from 'react';
-
-import {
-  View,
-  Pressable,
-  Text,
-  Animated,
-  useWindowDimensions,
-} from 'react-native';
-
-import {
-  useVideoPlayer,
-  VideoView,
-} from 'expo-video';
-
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { View, Pressable, Text, Animated, useWindowDimensions } from 'react-native';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEvent } from 'expo';
-
-import Slider from '@react-native-community/slider';
-
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as NavigationBar from 'expo-navigation-bar';
-
 import { StatusBar } from 'expo-status-bar';
-
+import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
+
+
+const DOUBLE_TAP_DELAY = 300;
+const SEEK_SECONDS = 5;
+const HIDE_CONTROLS_DELAY = 3000;
+
 
 type Props = {
   uri: string;
   onFullscreenChange?: (isFullscreen: boolean) => void;
 };
 
-const DOUBLE_TAP_DELAY = 300;
-const SEEK_SECONDS = 5;
-const HIDE_CONTROLS_DELAY = 3000;
-
-export default function VideoPlayer({
-  uri,
-  onFullscreenChange,
-}: Props) {
+export default function VideoPlayer({ uri, onFullscreenChange }: Props){
+  
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seekValue, setSeekValue] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { width, height } = useWindowDimensions();
 
-  // --------------------------------------------------
-  // Video Player
-  // --------------------------------------------------
+  const lastTap = useRef(0);
+  const lastTapX = useRef(0);
 
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
@@ -54,81 +36,41 @@ export default function VideoPlayer({
     player.play();
   });
 
-  // --------------------------------------------------
-  // Events
-  // --------------------------------------------------
+  const duration = player.duration;
 
   const { isPlaying } = useEvent(
     player,
     'playingChange',
-    useMemo(
-      () => ({
-        isPlaying: player.playing,
-      }),
-      [player]
-    )
+
+    useMemo(() => ({
+      isPlaying: player.playing,
+
+    }),[player])
   );
 
   const { currentTime } = useEvent(
     player,
     'timeUpdate',
-    useMemo(
-      () => ({
-        currentTime: player.currentTime,
-        currentLiveTimestamp: null,
-        currentOffsetFromLive: null,
-        bufferedPosition:
-          player.bufferedPosition ?? 0,
-      }),
-      [player]
-    )
+
+    useMemo(() => ({
+      currentTime: player.currentTime,
+      currentLiveTimestamp: null,
+      currentOffsetFromLive: null,
+      bufferedPosition:
+        player.bufferedPosition ?? 0,
+
+    }), [player])
   );
 
-  const duration = player.duration;
 
-  // --------------------------------------------------
-  // State
-  // --------------------------------------------------
+  
 
-  const [isSeeking, setIsSeeking] =
-    useState(false);
+  const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimer= useRef<ReturnType<typeof setTimeout> | null>(null);
+  const controlsOpacity = useRef(new Animated.Value(1)).current;
+  const controlsTranslateY = useRef(new Animated.Value(0)).current;
 
-  const [seekValue, setSeekValue] =
-    useState(0);
 
-  const [controlsVisible, setControlsVisible] =
-    useState(true);
-
-  const [isFullscreen, setIsFullscreen] =
-    useState(false);
-
-  // --------------------------------------------------
-  // Refs
-  // --------------------------------------------------
-
-  const lastTap = useRef(0);
-
-  const lastTapX = useRef(0);
-
-  const singleTapTimer =
-    useRef<ReturnType<typeof setTimeout> | null>(
-      null
-    );
-
-  const hideTimer =
-    useRef<ReturnType<typeof setTimeout> | null>(
-      null
-    );
-
-  const controlsOpacity =
-    useRef(new Animated.Value(1)).current;
-
-  const controlsTranslateY =
-    useRef(new Animated.Value(0)).current;
-
-  // --------------------------------------------------
-  // Controls
-  // --------------------------------------------------
 
   const showControls = () => {
     setControlsVisible(true);

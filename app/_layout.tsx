@@ -6,14 +6,13 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#000',
-        },
+        headerShown: false,
+        headerTransparent: true,
         headerTintColor: '#fff',
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'انتخاب فایل' }} />
-      <Stack.Screen name="player" options={{ title: 'پخش' }} />
+      <Stack.Screen name="index" options={{ title: 'Choose File' }} />
+      <Stack.Screen name="player" options={{ title: 'Play' }} />
     </Stack>
   );
 }
