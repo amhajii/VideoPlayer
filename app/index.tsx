@@ -1,17 +1,42 @@
-import { View, Text, Pressable } from 'react-native';
+import React from 'react';
+import { View, Pressable, Text } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
+import { getMediaType } from '../utils/fileType';
+import "../global.css";
 
-export default function Index() {
+export default function HomeScreen() {
   const router = useRouter();
 
+  const pickFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['video/*', 'image/gif'],
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) return;
+
+    const file = result.assets[0];
+    const type = getMediaType(file.name);
+
+    if (type === 'unknown') {
+      alert('این فرمت پشتیبانی نمی‌شه');
+      return;
+    }
+
+    router.push({
+      pathname: './player',
+      params: { uri: file.uri, type },
+    });
+  };
+
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-slate-100">
-      <Text className="text-2xl font-bold text-3xl">به اپ ما خوش اومدی 👋</Text>
+    <View className="flex-1 justify-center items-center bg-black">
       <Pressable
-        className="bg-green-600 px-10 py-5 rounded-2xl m-5 active:opacity-80 active:bg-red-400"
-        onPress={() => router.push('/about')}
+        onPress={pickFile}
+        className="bg-neutral-800 px-6 py-3 rounded-xl active:bg-neutral-700"
       >
-        <Text className="text-white text-base font-semibold text-xl">برو به صفحه‌ی About</Text>
+        <Text className="text-white text-base font-medium">انتخاب فایل</Text>
       </Pressable>
     </View>
   );
