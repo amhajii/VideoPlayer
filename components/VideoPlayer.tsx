@@ -1,11 +1,33 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Pressable, Text, Animated, useWindowDimensions } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+} from 'react';
+
+import {
+  View,
+  Pressable,
+  Text,
+  Animated,
+  useWindowDimensions,
+} from 'react-native';
+
+import {
+  useVideoPlayer,
+  VideoView,
+} from 'expo-video';
+
 import { useEvent } from 'expo';
+
 import Slider from '@react-native-community/slider';
+
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as NavigationBar from 'expo-navigation-bar';
+
 import { StatusBar } from 'expo-status-bar';
+
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
   uri: string;
@@ -16,20 +38,35 @@ const DOUBLE_TAP_DELAY = 300;
 const SEEK_SECONDS = 5;
 const HIDE_CONTROLS_DELAY = 3000;
 
-export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
+export default function VideoPlayer({
+  uri,
+  onFullscreenChange,
+}: Props) {
   const { width, height } = useWindowDimensions();
 
+  // --------------------------------------------------
+  // Video Player
+  // --------------------------------------------------
+
   const player = useVideoPlayer(uri, (player) => {
-    // player.volume = 0;
     player.loop = true;
     player.timeUpdateEventInterval = 0.5;
     player.play();
   });
 
+  // --------------------------------------------------
+  // Events
+  // --------------------------------------------------
+
   const { isPlaying } = useEvent(
     player,
     'playingChange',
-    useMemo(() => ({ isPlaying: player.playing }), [player])
+    useMemo(
+      () => ({
+        isPlaying: player.playing,
+      }),
+      [player]
+    )
   );
 
   const { currentTime } = useEvent(
@@ -40,7 +77,8 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
         currentTime: player.currentTime,
         currentLiveTimestamp: null,
         currentOffsetFromLive: null,
-        bufferedPosition: player.bufferedPosition ?? 0,
+        bufferedPosition:
+          player.bufferedPosition ?? 0,
       }),
       [player]
     )
@@ -48,66 +86,136 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
 
   const duration = player.duration;
 
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [seekValue, setSeekValue] = useState(0);
-  const [controlsVisible, setControlsVisible] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // --------------------------------------------------
+  // State
+  // --------------------------------------------------
 
-  const lastTapLeft = useRef(0);
-  const lastTapRight = useRef(0);
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const controlsOpacity = useRef(new Animated.Value(1)).current;
-  const controlsTranslateY = useRef(new Animated.Value(0)).current;
+  const [isSeeking, setIsSeeking] =
+    useState(false);
+
+  const [seekValue, setSeekValue] =
+    useState(0);
+
+  const [controlsVisible, setControlsVisible] =
+    useState(true);
+
+  const [isFullscreen, setIsFullscreen] =
+    useState(false);
+
+  // --------------------------------------------------
+  // Refs
+  // --------------------------------------------------
+
+  const lastTap = useRef(0);
+
+  const lastTapX = useRef(0);
+
+  const singleTapTimer =
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    );
+
+  const hideTimer =
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    );
+
+  const controlsOpacity =
+    useRef(new Animated.Value(1)).current;
+
+  const controlsTranslateY =
+    useRef(new Animated.Value(0)).current;
+
+  // --------------------------------------------------
+  // Controls
+  // --------------------------------------------------
 
   const showControls = () => {
     setControlsVisible(true);
+
     Animated.parallel([
-      Animated.timing(controlsOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.timing(controlsTranslateY, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(controlsOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(controlsTranslateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
+
     resetHideTimer();
   };
 
   const hideControls = () => {
     Animated.parallel([
-      Animated.timing(controlsOpacity, { toValue: 0, duration: 250, useNativeDriver: true }),
-      Animated.timing(controlsTranslateY, { toValue: 40, duration: 250, useNativeDriver: true }),
-    ]).start(() => setControlsVisible(false));
+      Animated.timing(controlsOpacity, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(controlsTranslateY, {
+        toValue: 40,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setControlsVisible(false);
+    });
   };
 
   const resetHideTimer = () => {
-    if (hideTimer.current) clearTimeout(hideTimer.current);
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+    }
+
     hideTimer.current = setTimeout(() => {
-      if (isPlaying) hideControls();
+      if (isPlaying) {
+        hideControls();
+      }
     }, HIDE_CONTROLS_DELAY);
   };
 
   useEffect(() => {
     resetHideTimer();
+
     return () => {
-      if (hideTimer.current) clearTimeout(hideTimer.current);
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
+      }
+
+      if (singleTapTimer.current) {
+        clearTimeout(singleTapTimer.current);
+      }
     };
   }, [isPlaying]);
 
-  // پاک‌سازی هنگام خروج از کامپوننت
+  // --------------------------------------------------
+  // Navigation Bar
+  // --------------------------------------------------
+
   useEffect(() => {
     NavigationBar.setVisibilityAsync('hidden');
-    // NavigationBar.setBehaviorAsync('overlay-swipe');
+
     return () => {
       // ScreenOrientation.unlockAsync();
       // NavigationBar.setVisibilityAsync('visible');
     };
   }, []);
 
-  // مدیریت navigation bar بر اساس حالت فول‌اسکرین (فقط اندروید تاثیر داره)
   useEffect(() => {
     if (isFullscreen) {
       NavigationBar.setVisibilityAsync('hidden');
-      NavigationBar.setBehaviorAsync('overlay-swipe');
-    } else {
-      // NavigationBar.setVisibilityAsync('visible');
     }
   }, [isFullscreen]);
+
+  // --------------------------------------------------
+  // Play / Pause
+  // --------------------------------------------------
 
   const togglePlay = () => {
     if (isPlaying) {
@@ -115,64 +223,145 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
     } else {
       player.play();
     }
+
     showControls();
   };
+
+  // --------------------------------------------------
+  // Seek
+  // --------------------------------------------------
 
   const seekBy = (seconds: number) => {
-    const newTime = Math.min(Math.max(player.currentTime + seconds, 0), duration || 0);
+    const newTime = Math.min(
+      Math.max(
+        player.currentTime + seconds,
+        0
+      ),
+      duration || 0
+    );
+
     player.currentTime = newTime;
+
     showControls();
   };
 
-  const handleLeftTap = () => {
+  // --------------------------------------------------
+  // Video Tap Handler
+  //
+  // Single Tap:
+  //      Play / Pause
+  //
+  // Double Tap:
+  //      Left  -> -5s
+  //      Right -> +5s
+  // --------------------------------------------------
+
+  const handleVideoTap = (
+    event: any
+  ) => {
     const now = Date.now();
-    if (now - lastTapLeft.current < DOUBLE_TAP_DELAY) {
-      seekBy(-SEEK_SECONDS);
-      lastTapLeft.current = 0;
-    } else {
-      lastTapLeft.current = now;
-      toggleControlsVisibility();
+
+    const tapX =
+      event.nativeEvent.locationX;
+
+    const videoWidth = width;
+
+    const isDoubleTap =
+      now - lastTap.current <
+      DOUBLE_TAP_DELAY;
+
+    if (isDoubleTap) {
+      // Cancel pending single tap
+      if (singleTapTimer.current) {
+        clearTimeout(
+          singleTapTimer.current
+        );
+
+        singleTapTimer.current = null;
+      }
+
+      // Determine left / right side
+      const isLeftSide =
+        lastTapX.current <
+        videoWidth / 2;
+
+      if (isLeftSide) {
+        seekBy(-SEEK_SECONDS);
+      } else {
+        seekBy(SEEK_SECONDS);
+      }
+
+      lastTap.current = 0;
+      lastTapX.current = 0;
+
+      return;
     }
+
+    // First tap
+    lastTap.current = now;
+    lastTapX.current = tapX;
+
+    // Wait to see if second tap happens
+    singleTapTimer.current = setTimeout(() => {
+      togglePlay();
+
+      lastTap.current = 0;
+      lastTapX.current = 0;
+      singleTapTimer.current = null;
+    }, DOUBLE_TAP_DELAY);
   };
 
-  const handleRightTap = () => {
-    const now = Date.now();
-    if (now - lastTapRight.current < DOUBLE_TAP_DELAY) {
-      seekBy(SEEK_SECONDS);
-      lastTapRight.current = 0;
-    } else {
-      lastTapRight.current = now;
-      toggleControlsVisibility();
-    }
-  };
-
-  const toggleControlsVisibility = () => {
-    if (controlsVisible) {
-      hideControls();
-    } else {
-      showControls();
-    }
-  };
+  // --------------------------------------------------
+  // Fullscreen
+  // --------------------------------------------------
 
   const toggleFullscreen = async () => {
     if (isFullscreen) {
-      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      await ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT_UP
+      );
+
       setIsFullscreen(false);
+
       onFullscreenChange?.(false);
     } else {
       await ScreenOrientation.unlockAsync();
+
       setIsFullscreen(true);
+
       onFullscreenChange?.(true);
     }
+
     showControls();
   };
 
-  const formatTime = (seconds: number) => {
-    if (!seconds || isNaN(seconds)) return '0:00';
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
+  // --------------------------------------------------
+  // Format Time
+  // --------------------------------------------------
+
+  const formatTime = (
+    seconds: number
+  ) => {
+    if (!seconds || isNaN(seconds)) {
+      return '0:00';
+    }
+
+    const minutes = Math.floor(
+      seconds / 60
+    );
+
+    const secondsPart = Math.floor(
+      seconds % 60
+    );
+
+    return `${minutes}:${secondsPart
+      .toString()
+      .padStart(2, '0')}`;
   };
+
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
 
   return (
     <View
@@ -187,10 +376,20 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
               height,
               zIndex: 100,
             }
-          : { flex: 1 }
+          : {
+              flex: 1,
+            }
       }
     >
-      <StatusBar hidden={isFullscreen} />
+      {/* Status Bar */}
+
+      <StatusBar
+        hidden={isFullscreen}
+      />
+
+      {/* -------------------------------------------- */}
+      {/* Video */}
+      {/* -------------------------------------------- */}
 
       <VideoView
         player={player}
@@ -199,28 +398,98 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
         contentFit="contain"
       />
 
-      {/* لایه‌ی شفاف روی ویدیو برای تشخیص تپ‌ها */}
-      <View className="absolute inset-0 flex-row">
-        <Pressable onPress={handleLeftTap} className="flex-1" />
-        <Pressable onPress={togglePlay} className="w-16" />
-        <Pressable onPress={handleRightTap} className="flex-1" />
-      </View>
+      {/* -------------------------------------------- */}
+      {/* Video Gesture Layer */}
+      {/* -------------------------------------------- */}
 
-      {/* کنترلر پایین صفحه */}
+      <Pressable
+        onPress={handleVideoTap}
+        className="absolute inset-0"
+      />
+
+      {/* -------------------------------------------- */}
+      {/* Center Play / Pause Indicator */}
+      {/* -------------------------------------------- */}
+
       <Animated.View
-        pointerEvents={controlsVisible ? 'auto' : 'none'}
+        pointerEvents="none"
         style={{
           opacity: controlsOpacity,
-          transform: [{ translateY: controlsTranslateY }],
         }}
-        className="absolute bottom-0 left-0 right-0 bg-black/60 px-4 pt-2 pb-6"
+        className="absolute inset-0 items-center justify-center"
       >
+        <View
+          className="
+            w-16
+            h-16
+            rounded-full
+            bg-black/50
+            items-center
+            justify-center
+          "
+        >
+          <Ionicons
+            name={
+              isPlaying
+                ? 'pause'
+                : 'play'
+            }
+            size={30}
+            color="white"
+            style={
+              !isPlaying
+                ? { marginLeft: 3 }
+                : undefined
+            }
+          />
+        </View>
+      </Animated.View>
+
+      {/* -------------------------------------------- */}
+      {/* Bottom Controls */}
+      {/* -------------------------------------------- */}
+
+      <Animated.View
+        pointerEvents={
+          controlsVisible
+            ? 'auto'
+            : 'none'
+        }
+        style={{
+          opacity: controlsOpacity,
+
+          transform: [
+            {
+              translateY:
+                controlsTranslateY,
+            },
+          ],
+        }}
+        className="
+          absolute
+          bottom-0
+          left-0
+          right-0
+          bg-black/70
+          px-4
+          pt-3
+          pb-5
+        "
+      >
+        {/* Progress */}
+
         <Slider
-          value={isSeeking ? seekValue : currentTime}
+          value={
+            isSeeking
+              ? seekValue
+              : currentTime
+          }
           minimumValue={0}
-          maximumValue={duration || 1}
+          maximumValue={
+            duration || 1
+          }
           minimumTrackTintColor="#ffffff"
-          maximumTrackTintColor="#555555"
+          maximumTrackTintColor="rgba(255,255,255,0.3)"
           thumbTintColor="#ffffff"
           onValueChange={(value) => {
             setSeekValue(value);
@@ -232,47 +501,150 @@ export default function VideoPlayer({ uri, onFullscreenChange }: Props) {
           }}
           onSlidingComplete={(value) => {
             player.currentTime = value;
+
             setIsSeeking(false);
+
             resetHideTimer();
           }}
         />
 
-        <View className="flex-row justify-between items-center mt-1">
-          <Text className="text-white text-xs">{formatTime(currentTime)}</Text>
+        {/* ---------------------------------------- */}
+        {/* Bottom Row */}
+        {/* ---------------------------------------- */}
 
-          <View className="flex-row items-center gap-3">
+        <View className="flex-row items-center justify-between mt-1">
+          {/* Current Time */}
+
+          <Text className="text-white text-xs font-medium">
+            {formatTime(currentTime)}
+          </Text>
+
+          {/* Main Controls */}
+
+          <View className="flex-row items-center">
+            {/* Rewind */}
+
             <Pressable
-              onPress={togglePlay}
-              className="bg-neutral-800 px-5 py-2 rounded-full active:bg-neutral-700"
+              onPress={() =>
+                seekBy(-SEEK_SECONDS)
+              }
+              className="
+                w-10
+                h-10
+                items-center
+                justify-center
+                rounded-full
+                active:bg-white/10
+              "
             >
-              <Text className="text-white text-sm font-medium">
-                {isPlaying ? 'توقف' : 'پخش'}
-              </Text>
+              <View className="items-center justify-center">
+                <Ionicons
+                  name="play-back"
+                  size={19}
+                  color="white"
+                />
+
+                <Text className="absolute text-white text-[8px] font-bold">
+                  5
+                </Text>
+              </View>
             </Pressable>
 
+            {/* Play / Pause */}
+
             <Pressable
-              onPress={toggleFullscreen}
-              className="bg-neutral-800 px-4 py-2 rounded-full active:bg-neutral-700"
+              onPress={togglePlay}
+              className="
+                w-11
+                h-11
+                mx-2
+                rounded-full
+                bg-white
+                items-center
+                justify-center
+                active:bg-white/80
+              "
             >
-              <Text className="text-white text-sm font-medium">
-                {isFullscreen ? '⤢' : '⛶'}
-              </Text>
+              <Ionicons
+                name={
+                  isPlaying
+                    ? 'pause'
+                    : 'play'
+                }
+                size={21}
+                color="black"
+                style={
+                  !isPlaying
+                    ? { marginLeft: 2 }
+                    : undefined
+                }
+              />
+            </Pressable>
+
+            {/* Forward */}
+
+            <Pressable
+              onPress={() =>
+                seekBy(SEEK_SECONDS)
+              }
+              className="
+                w-10
+                h-10
+                items-center
+                justify-center
+                rounded-full
+                active:bg-white/10
+              "
+            >
+              <View className="items-center justify-center">
+                <Ionicons
+                  name="play-forward"
+                  size={19}
+                  color="white"
+                />
+
+                <Text className="absolute text-white text-[8px] font-bold">
+                  5
+                </Text>
+              </View>
             </Pressable>
           </View>
 
-          <Text className="text-white text-xs">{formatTime(duration)}</Text>
-        </View>
+          {/* Right Side */}
 
-        {/* دکمه‌ی بزرگ play/pause دستی، زیر ردیف کنترلر اصلی */}
-        <View className="items-center mt-3">
-          <Pressable
-            onPress={togglePlay}
-            className="bg-white/90 w-14 h-14 rounded-full items-center justify-center active:bg-white/70"
-          >
-            <Text className="text-black text-xl font-bold">
-              {isPlaying ? '⏸' : '▶'}
+          <View className="flex-row items-center">
+            {/* Duration */}
+
+            <Text className="text-white/70 text-xs font-medium mr-3">
+              {formatTime(duration)}
             </Text>
-          </Pressable>
+
+            {/* Fullscreen */}
+
+            <Pressable
+              onPress={
+                toggleFullscreen
+              }
+              className="
+                w-10
+                h-10
+                rounded-full
+                items-center
+                justify-center
+                active:bg-white/10
+              "
+            >
+              <Ionicons
+                name={
+                  isFullscreen
+                    ? 'contract'
+                    : 'expand'
+                }
+                size={21}
+                color="white"
+              />
+            </Pressable>
+          </View>
         </View>
       </Animated.View>
     </View>
