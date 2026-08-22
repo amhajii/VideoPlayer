@@ -207,11 +207,11 @@ export default function VideoPlayer({
     };
   }, []);
 
-  useEffect(() => {
-    if (isFullscreen) {
-      NavigationBar.setVisibilityAsync('hidden');
-    }
-  }, [isFullscreen]);
+  // useEffect(() => {
+  //   if (isFullscreen) {
+  //     NavigationBar.setVisibilityAsync('hidden');
+  //   }
+  // }, [isFullscreen]);
 
   // --------------------------------------------------
   // Play / Pause
