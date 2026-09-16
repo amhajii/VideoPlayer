@@ -1,255 +1,122 @@
+# Local Media Player
 
+A privacy-first, offline video & GIF player for mobile — built with **React Native** and **Expo**.
 
-# Welcome to your Expo app 👋
+## About
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-  
-## Get started 
+This app lets you play video and GIF files stored locally on your phone — with no internet connection required, no file uploads, and no tracking or analytics of any kind. All processing happens entirely on-device.
 
-1. Install dependencies
-   ```bash
-   npm install
-   ```
+The playback controller is fully custom-built, rather than relying on the system's default native controls.
 
+## Features
 
-2. Start the app 
-   ```bash
-   npx expo start
-   ```
+- Video playback for common formats (`mp4`, `mov`, `mkv`, `webm`, etc.)
+- Animated GIF playback
+- Fully offline — no network requests, no backend server
+- Custom playback controller:
+  - Double-tap left/right to seek backward/forward (5 seconds)
+  - Slider for manual seeking
+  - Large centered play/pause button
+  - Custom fullscreen mode (not dependent on the system's native fullscreen UI)
+- Controls auto-hide/show after a few seconds of inactivity
+- Loop playback for both video and GIF
 
-  
-  
+## Tech Stack
 
----
-
-  
-# My App — React Native (Expo Router)
-
-  
-
-اپلیکیشن موبایل ساخته‌شده با **Expo** و **Expo Router**، برای یادگیری React Native و به‌عنوان نقطه‌ی شروع پروژه‌ی دانشگاهی.
-
-  
-
-## تکنولوژی‌ها
-
-  
-
-| بخش | ابزار |
-
+| Layer | Tool |
 |---|---|
+| Framework | React Native (Expo) |
+| Language | TypeScript |
+| Routing | Expo Router |
+| Styling | NativeWind (Tailwind CSS) |
+| Video playback | expo-video |
+| GIF rendering | expo-image |
+| File picking | expo-document-picker |
+| Icons | @expo/vector-icons |
+| Orientation control | expo-screen-orientation |
 
-| Framework | React Native (via Expo) |
-
-| Router | Expo Router (فایل‌محور، مثل Next.js) |
-
-| زبان | TypeScript (فایل‌های `.ts`/`.tsx`) |
-
-| بسته‌بندی/باندلر | Metro |
-
-| تست روی گوشی | Expo Go (SDK 54) |
-
-  
-
-## پیش‌نیازها
-- Node.js 
-- npm
-
-- گوشی موبایل با اپ **Expo Go** نصب‌شده (از Google Play یا App Store)
-  - یا شبیه‌ساز Android Studio / Xcode Simulator (اختیاری)
-
-
-## نصب
-
+## Getting Started
 
 ```bash
-
-git clone <repo-url>
-
-cd my-app
-
+# Install dependencies
 npm install
 
-```
-
-  
-
-## اجرا (Development)
-
-  
-
-```bash
-
+# Start the project
 npx expo start
-
 ```
 
-  
+To run on your phone, install the **Expo Go** app and scan the displayed QR code.
 
-بعد از اجرا:
-
-- یه **QR کد** تو ترمینال یا مرورگر نمایش داده می‌شه
-
-- با اپ **Expo Go** روی گوشی، QR کد رو اسکن کن
-
-- یا کلیدهای زیر رو تو ترمینال بزن:
-
-  - `w` → باز کردن نسخه‌ی وب
-
-  - `a` → باز کردن روی شبیه‌ساز اندروید (اگه نصب داری)
-
-  - `i` → باز کردن روی شبیه‌ساز iOS (فقط macOS)
-
-  - `r` → ری‌لود اپ
-
-  - `m` → باز کردن منوی dev
-
-  
-
-اگه بعد از تغییر کانفیگ (metro/babel) رفتار عجیب دیدی، کش رو پاک کن و دوباره اجرا کن:
+### Run on Web
 
 ```bash
+npx expo start --web
+```
 
-npx expo start -c
+## 📂 Project Structure
 
 ```
 
-  
+├── app
+|  ├── index.tsx
+|  ├── PlayerScreen.tsx
+|  └── _layout.tsx
+|
+├── components
+|  ├── GifPlayer
+|  ├── index.ts
+|  ├── PlaybackControls.tsx
+|  ├── PlayPauseIndicator.tsx
+|  └── VideoPlayer
+|
+├── Hooks
+|  ├── index.ts
+|  ├── useControlsVisibility.ts
+|  ├── useDoubleTapSeek.ts
+|  ├── useFullscreen.ts
+|  └── useVideoControls.ts
+|
+├── utils
+   ├── fileType.ts
+   └── formatTime.ts
+├── assets
+|  └── images
+|
+├── babel.config.js
+├── CLAUDE.md
+├── AGENTS.md
+├── Constants
+├── cssInterop.ts
+├── eslint.config.js
+├── expo-env.d.ts
+├── global.css
+├── metro.config.js
+├── nativewind-env.d.ts
+├── package-lock.json
+├── package.json
+├── app.json
+├── README.md
+├── tailwind.config.js
+├── tsconfig.json
 
-## ساختار پروژه
 
-  
-
-```
-
-my-app/
-
-├── app/                      # صفحات اپ (Expo Router — فایل‌محور)
-
-│   ├── (tabs)/                # گروه route برای تب‌های پایین صفحه
-
-│   ├── _layout.tsx            # لایه‌ی مشترک کل اپ (Navigator اصلی)
-
-│   └── modal.tsx               # نمونه صفحه‌ی مودال
-
-│
-
-├── components/                # کامپوننت‌های قابل استفاده‌ی مجدد
-
-│   ├── ui/
-
-│   ├── themed-text.tsx        # کامپوننت متن با پشتیبانی از dark/light mode
-
-│   ├── themed-view.tsx
-
-│   ├── parallax-scroll-view.tsx
-
-│   ├── hello-wave.tsx
-
-│   └── external-link.tsx
-
-│
-
-├── constants/
-
-│   └── theme.ts               # تعریف رنگ‌ها و تم روشن/تاریک
-
-│
-
-├── hooks/
-
-│   ├── use-color-scheme.ts    # تشخیص حالت روشن/تاریک سیستم
-
-│   ├── use-color-scheme.web.ts
-
-│   └── use-theme-color.ts
-
-│
-
-├── assets/
-
-│   └── images/                 # آیکون‌ها و تصاویر استاتیک
-
-│
-
-├── scripts/
-
-│   └── reset-project.js        # اسکریپت پاک‌سازی boilerplate اولیه
-
-│
-
-├── app.json                    # کانفیگ اصلی Expo (نام اپ، آیکون، پلاگین‌ها)
-
-├── tsconfig.json                # تنظیمات TypeScript
-
-├── eslint.config.js              # قوانین Lint
-
-└── package.json
+directory: 1486 file: 3388
 
 ```
 
-  
+## 📝 Project Status
+This project is under active development. More features (such as setting the app as a default handler for video/GIF file types) are planned.
 
-### نکات مهم درباره‌ی ساختار
+## 📄 License
+This project was built for educational/personal purposes.
 
-  
 
-- **`app/` = Entry Point و مسیرها.** هر فایل داخل این پوشه خودکار به یه route تبدیل می‌شه (شبیه `pages/` تو Next.js). نیازی به تعریف دستی navigator نیست.
 
-- **`(tabs)`** یه *route group* هست — پرانتز یعنی این پوشه تو مسیر URL ظاهر نمی‌شه، فقط برای گروه‌بندی و تعریف یه navigator مشترک (اینجا Tab Navigator) استفاده می‌شه.
 
-- **`_layout.tsx`** لایه‌ی مشترکیه که دور همه‌ی صفحات می‌پیچه (مثل تعریف Stack/Provider اصلی).
 
-- تفاوتی با پروژه‌های ساده‌ی React وب: به‌جای HTML، از کامپوننت‌های native (`View`, `Text`, ...) استفاده می‌شه که مستقیم به UI بومی iOS/Android رندر می‌شن.
 
-  
 
-## دستورات مفید
 
-  
 
-| دستور | کاربرد |
 
-|---|---|
 
-| `npx expo start` | اجرای سرور توسعه |
-
-| `npx expo start -c` | اجرا با پاک‌کردن کش |
-
-| `npm run lint` | بررسی Lint (اگه تعریف شده باشه) |
-
-| `npx expo install <package>` | نصب پکیج با نسخه‌ی سازگار با SDK فعلی |
-
-  
-
-## ساخت نسخه‌ی نهایی (Build)
-
-  
-
-برای گرفتن فایل نصبی (APK/IPA) واقعی (نه فقط تست با Expo Go)، از **EAS Build** استفاده می‌شه:
-
-  
-
-```bash
-
-npm install -g eas-cli
-
-eas login
-
-eas build:configure
-
-eas build --platform android
-
-```
-
-  
-
-> این مرحله نیاز به حساب Expo (رایگان) داره و برای مراحل بعدی پروژه لازم می‌شه، نه الان.
-
-  
-
-## وضعیت پروژه
-
-  
-
-🚧 در حال توسعه — پروژه‌ی یادگیری React Native.
