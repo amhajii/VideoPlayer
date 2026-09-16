@@ -110,13 +110,8 @@ This project is under active development. More features (such as setting the app
 ## 📄 License
 This project was built for educational/personal purposes.
 
+This project is licensed under the [MIT License](./LICENSE).
 
+This project is an early-stage student project and is provided "as is", without warranty of any kind. Use it at your own risk. The author is not liable for any damages, data loss, or unexpected behavior resulting from the use of this software, to the fullest extent permitted by applicable law.
 
-
-
-
-
-
-
-
-
+See the [LICENSE](./LICENSE) file for the full terms and conditions.
